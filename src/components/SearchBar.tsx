@@ -129,7 +129,6 @@ export function SearchBar({
           value={query}
           maxLength={80}
           spellCheck={false}
-          disabled={busy}
           aria-autocomplete="list"
           aria-controls={listId}
           aria-expanded={showList}

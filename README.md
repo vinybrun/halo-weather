@@ -1,23 +1,30 @@
 # Halo Weather
 
-A polished, responsive weather app for the browser. Search any city, or use your location, and read current conditions plus a seven-day forecast. Data comes from [Open-Meteo](https://open-meteo.com/) — **no API key**.
+A polished, publicly usable weather app. Search any city, or use the browser’s location. Current conditions, the next hours, and a 7-day forecast — no accounts, no API keys.
 
-**Live:** https://vinybrun.github.io/halo-weather/
+**Live:** [https://vinybrun.github.io/halo-weather/](https://vinybrun.github.io/halo-weather/)
 
-This is a static Vite + React + TypeScript app. The browser talks to Open-Meteo directly. There is no backend and no secrets.
+Weather and geocoding come from [Open-Meteo](https://open-meteo.com/) (free, no key).
 
 ## Features
 
 - City search with live suggestions and keyboard navigation
-- Invalid-city handling when Open-Meteo finds no match
-- Optional **Near me** via the browser Geolocation API
-- Current temperature, description, humidity, wind, and feels-like
-- °C / °F toggle (wind and precipitation convert with it)
-- Next-hours strip and a 7-day forecast
-- Loading skeletons, network errors with retry, and permission-denied states
-- Last place and unit preference saved in `localStorage`
-- Weather-reactive atmosphere (clear, night, rain, snow, storm)
+- Optional browser geolocation (“Near me”)
+- Current conditions: temperature, description, humidity, wind, feels-like
+- Instant °C / °F toggle (wind km/h ↔ mph, precipitation mm ↔ in)
+- Next-hours strip and a 7-day outlook
+- Loading skeletons, network errors with retry, and unknown-city handling
+- Last place and unit preference remembered in `localStorage`
 - Responsive layout for phones and desktops
+- Weather-reactive atmosphere
+
+## Project path
+
+```
+/home/viny/.local/share/fleet-host/work/07b61a11-acbb-4287-8ace-da06d62f44c1
+```
+
+This directory is the app root (`package.json`, `src/`, `index.html`). Ignore leftover experiment folders such as `alto-app/`, `brume/`, and `halo-ship/` — they are not the shipped product.
 
 ## Run locally
 
@@ -32,76 +39,54 @@ Open the URL Vite prints (usually `http://localhost:5173`).
 
 | Script | What it does |
 | --- | --- |
-| `npm run dev` | Start the Vite dev server |
-| `npm run build` | Typecheck and build static files into `dist/` |
+| `npm run dev` | Development server with hot reload |
+| `npm run build` | Typecheck and production build into `dist/` |
 | `npm run preview` | Serve the production build locally |
-| `npm run typecheck` | Typecheck without bundling |
+| `npm run typecheck` | TypeScript only |
 
-Production preview:
+## API
 
-```bash
-npm run build
-npm run preview
-```
+No keys. The browser talks to Open-Meteo directly.
 
-## APIs used
+| Use | Endpoint |
+| --- | --- |
+| City search | `https://geocoding-api.open-meteo.com/v1/search` |
+| Reverse geocode (optional) | `https://geocoding-api.open-meteo.com/v1/reverse` |
+| Forecast | `https://api.open-meteo.com/v1/forecast` |
 
-No keys. Attribution is required by Open-Meteo’s CC BY 4.0 licence (shown in the footer).
+Requested forecast fields:
 
-1. **Geocoding** — `https://geocoding-api.open-meteo.com/v1/search`  
-   Resolves a city name to coordinates.
-2. **Reverse geocoding** — `https://geocoding-api.open-meteo.com/v1/reverse`  
-   Labels a GPS fix when possible; otherwise the app shows **Your location**.
-3. **Forecast** — `https://api.open-meteo.com/v1/forecast`  
-   Current conditions, hourly, and 7-day daily outlook for those coordinates.
+- **current:** `temperature_2m`, `apparent_temperature`, `relative_humidity_2m`, `weather_code`, `wind_speed_10m`, `wind_direction_10m`, `is_day`, `precipitation`
+- **hourly:** `temperature_2m`, `weather_code`, `precipitation_probability`, `is_day`
+- **daily:** `weather_code`, `temperature_2m_max`, `temperature_2m_min`, `precipitation_probability_max`, `sunrise`, `sunset` (7 days)
 
-The browser Geolocation API is used only when you click **Near me**.
+Forecasts are requested in Celsius / km/h and converted on the device. If reverse geocoding is unavailable, “Near me” still loads weather for the coordinates and labels the place **Your location**.
 
 ## Deploy
 
-The production build is a static site (`dist/`).
+This is a static Vite app (`dist/`). `base` is `./`, so it works on a domain root or a project subpath. No environment variables.
 
-### GitHub Pages
+### GitHub Pages (this repo)
+
+The live site is served from the `gh-pages` branch.
 
 ```bash
+npm ci
 npm run build
+# publish the contents of dist/ to the gh-pages branch
 ```
 
-This repo deploys in two ways:
+Repo **Settings → Pages → Deploy from a branch → `gh-pages` / root**.
 
-- **Actions:** `.github/workflows/pages.yml` builds on every push to `main`.
-- **Branch:** the `gh-pages` branch serves the contents of `dist/`.
-
-After creating a new repo:
-
-```bash
-gh repo create YOUR_USER/halo-weather --public --source=. --remote=origin --push
-gh api -X POST repos/YOUR_USER/halo-weather/pages \
-  -f build_type=legacy \
-  -f source[branch]=gh-pages \
-  -f source[path]='/'
-```
-
-To publish `dist/` to `gh-pages`:
-
-```bash
-git checkout --orphan gh-pages
-git reset
-git add -f dist
-git mv dist/* .
-touch .nojekyll
-git add .nojekyll
-git commit -m "Deploy"
-git push -u origin gh-pages
-```
+A GitHub Actions workflow also exists at `.github/workflows/pages.yml`. To use it instead, switch Pages source to **GitHub Actions**.
 
 ### Vercel
 
 ```bash
-npx vercel --yes
+npx vercel --prod
 ```
 
-`vercel.json` already points at the Vite output.
+`vercel.json` already points at `dist`.
 
 ### Netlify
 
@@ -109,33 +94,22 @@ npx vercel --yes
 npx netlify deploy --prod --dir=dist
 ```
 
-Or connect the repo: build command `npm run build`, publish directory `dist`. `netlify.toml` is included.
+Or connect the repo. `netlify.toml` sets `npm run build` and publish directory `dist`.
 
-### Manual static host
+### Cloudflare Pages
 
-```bash
-npm run build
-```
-
-Upload the contents of `dist/` to any static host.
-
-## Project layout
-
-```
-src/
-  api/            Open-Meteo client + browser geolocation
-  components/     Search, icons, current view, status panels
-  hooks/          App state machine
-  lib/            units, formatting, WMO codes, localStorage
-  App.tsx         Shell and status routing
-  styles.css      Visual system
-```
+- Build command: `npm run build`
+- Output directory: `dist`
 
 ## Remaining risks
 
-- Open-Meteo rate-limits very heavy anonymous use (about 10k calls/day on the free tier).
-- City search depends on Open-Meteo’s gazetteer; obscure or misspelled names can miss.
-- Geolocation can be blocked by the browser, HTTP (non-secure) origins, or the user.
-- Forecasts are model output, not official warnings.
-- Google Fonts are loaded from `fonts.googleapis.com` (the app still works if that request fails).
-- Reverse geocoding may be unavailable; the app then labels the pin as **Your location**.
+- Open-Meteo’s free tier is for **non-commercial** use and is rate-limited. Heavy public traffic can be throttled.
+- City search needs at least two characters. Unusual spellings or very small places may return nothing.
+- Geolocation depends on HTTPS (or localhost), a supporting browser, and the user granting permission.
+- Forecasts are model output, not official warnings. Do not rely on this app for severe-weather decisions.
+- Last place is stored only in the browser. Clearing site data forgets it.
+- Google Fonts load from `fonts.googleapis.com`. The app still works if that request fails (system fonts).
+
+## License
+
+MIT. Weather data attribution: **Weather data by Open-Meteo.com**. Location data based on GeoNames.
