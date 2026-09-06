@@ -2,6 +2,10 @@
 
 A polished weather observatory for the browser. Search any city, or use your location, and get current conditions plus a seven-day forecast. Powered by [Open-Meteo](https://open-meteo.com/) — no API key, no account.
 
+**Live:** https://vinybrun.github.io/halo-weather/
+
+**Project path:** `/home/viny/.local/share/fleet-host/work/07b61a11-acbb-4287-8ace-da06d62f44c1`
+
 ## Features
 
 - City search with live suggestions and keyboard navigation
