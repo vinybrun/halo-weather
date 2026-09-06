@@ -67,8 +67,10 @@ export default function App() {
           <IdlePanel onPick={(city: string) => void app.searchCity(city)} />
         ) : null}
 
-        {app.weather && !error ? (
-          <WeatherView place={app.weather.place} weather={app.weather} unit={app.unit} />
+        {app.weather && error?.code !== "not_found" ? (
+          <div className={loading ? "is-dim" : undefined}>
+            <WeatherView place={app.weather.place} weather={app.weather} unit={app.unit} />
+          </div>
         ) : null}
       </div>
 
