@@ -4,6 +4,8 @@ A polished, responsive weather app. Search any city, optionally use browser geol
 
 **Live:** [https://vinybrun.github.io/halo-weather/](https://vinybrun.github.io/halo-weather/)
 
+**Project path:** `/home/viny/.local/share/fleet-host/work/07b61a11-acbb-4287-8ace-da06d62f44c1`
+
 This is a static Vite + React + TypeScript app. The browser talks to Open-Meteo directly. There is no backend and no secrets.
 
 ## Features
@@ -84,6 +86,13 @@ npx netlify deploy --prod --dir=dist
 ```
 
 Or connect the repo: build command `npm run build`, publish directory `dist`. `netlify.toml` is included.
+
+### Cloudflare Pages
+
+Create a Pages project from the repo:
+
+- Build command: `npm run build`
+- Output directory: `dist`
 
 ### Manual static host
 
